@@ -26,6 +26,7 @@ single_score = True
 
 # precision and recall output switch.
 # Default false (do not output precision and recall, just output F score)
+raw_flag = False
 pr_flag = False
 
 # Error log location
@@ -82,6 +83,8 @@ def build_arg_parser():
                              'instead of a single document-level smatch score (Default: false)')
     parser.add_argument('--pr', action='store_true', default=False,
                         help="Output precision and recall as well as the f-score. Default: false")
+    parser.add_argument('--raw', action='store_true', default=False,
+                      help="Output raw count for calculating smatch manually. Default: false")
     return parser
 
 
@@ -102,7 +105,9 @@ def build_arg_parser2():
                            'a single document-level smatch score (Default: False)')
     parser.add_option('--pr', "--precision_recall", action='store_true', dest="pr",
                       help="Output precision and recall as well as the f-score. Default: false")
-    parser.set_defaults(r=4, v=False, ms=False, pr=False)
+    parser.add_option('--raw', "--raw_output", action='store_true', dest="raw",
+                      help="Output raw count for calculating smatch manually. Default: false")
+    parser.set_defaults(r=4, v=False, ms=False, pr=False,raw=False)
     return parser
 
 
@@ -697,6 +702,7 @@ def main(arguments):
     global iteration_num
     global single_score
     global pr_flag
+    global raw_flag
     global match_triple_dict
     # set the iteration number
     # total iteration number = restart number + 1
@@ -707,6 +713,8 @@ def main(arguments):
         verbose = True
     if arguments.pr:
         pr_flag = True
+    if arguments.raw:
+        raw_flag = True
     # matching triple number
     total_match_num = 0
     # triple number in test file
@@ -772,11 +780,15 @@ def main(arguments):
                                                           test_triple_num,
                                                           gold_triple_num)
             #print "Sentence", sent_num
-            if pr_flag:
+            if raw_flag:
+                print best_match_num
+                print test_triple_num
+                print gold_triple_num
+            elif pr_flag:
                 print "Precision: %.3f" % precision
                 print "Recall: %.3f" % recall
+                print "%.3f" % best_f_score
 #            print "Smatch score: %.3f" % best_f_score
-            print "%.3f" % best_f_score
         total_match_num += best_match_num
         total_test_num += test_triple_num
         total_gold_num += gold_triple_num
